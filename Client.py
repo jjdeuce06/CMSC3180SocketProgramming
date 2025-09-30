@@ -1,24 +1,43 @@
-from socket import *
+# Import socket module 
+import socket             
 
-#Client
-clientInput = int(input("Enter a port number: "))
+# Create a socket object 
+s = socket.socket()         
 
-try:
-    clientPort = clientInput
-    clientSocket = socket(AF_INET, SOCK_STREAM)
-    clientSocket.connect(('158.83.11.22', clientPort))
-    print("Connection established with server on port", clientPort)
-    while True:
-        sentence = input("Enter a sentence: ")
-        if sentence.lower() == 'exit':
-            print("Exiting...")
-            break
+while True:
+    # Define the port on which you want to connect 
+    port = int(input("Enter port number: ")) 
+
+    # connect to the server on local computer 
+    try:
+        s.connect(('158.83.11.22', port)) 
+        print("Connection established")
+        serverGreeting = s.recv(1024)
+        print("From Server:", serverGreeting.decode())
+        break
+    except ConnectionRefusedError:
+        print("Connection refused. Make sure the port number is correct.")
+
+while True:
+    sentence = input("Enter a sentence: ")
+    if sentence.lower() == 'exit':
+        print("Exiting...")
         capitalizedSentence = sentence.upper()
-        clientSocket.send(capitalizedSentence.encode())
-        modifiedSentence = clientSocket.recv(1024)
+        s.send(capitalizedSentence.encode())
+        break
+    echo = input("Server echo? (y/n): ")
+    if echo.lower() == 'n':
+        capitalizedSentence = sentence.upper()
+        s.send(capitalizedSentence.encode())
+        #s.send(echo.encode())
+        modifiedSentence = s.recv(1024)
+    elif echo.lower() == 'y':
+        capitalizedSentence = sentence.upper()
+        s.send(capitalizedSentence.encode())
+        #s.send(echo.encode())
+        modifiedSentence = s.recv(1024)
         print("From Server:", modifiedSentence.decode())
-except Exception as e:
-    print("An error occurred:", e)
-    clientSocket.close()
+    else:
+        print("Invalid input. Please enter 'y' or 'n'.")
 
-clientSocket.close()
+s.close() 
